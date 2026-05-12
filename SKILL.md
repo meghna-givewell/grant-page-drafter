@@ -89,11 +89,14 @@ For failed web fetches, mark that source as `[SOURCE NEEDED — fetch failed]`.
 
 **Step 4 — Scan CA footnotes and build initial Sources list.**
 
-Read through the CA's own footnotes and citations. For each source cited in the CA:
+The CA's own footnotes are the primary path to the real citable sources. Read through every CA footnote and citation. For each:
+- Identify the underlying source (grant proposal, program report, evaluator document, research paper, call note, etc.)
 - Check whether you already have its content from Step 3 (Drive or web)
-- If yes: draft the footnote text from the actual source content
-- If no: add a `[SOURCE NEEDED]` row and note what the CA says about it
-- Mark internal Box links, unpublished documents, or GiveWell internal analyses as "Unpublished"
+- If yes: draft the footnote text from the actual source content, with page number
+- If no: add the source to the working list with whatever metadata the CA provides; mark as `[SOURCE NEEDED]` if content couldn't be retrieved
+- Mark internal Box links, unpublished GiveWell documents, or informal communications as "Unpublished"
+
+**Important:** the CA itself does not appear in the Sources table. Only the sources the CA draws from appear there.
 
 The Sources table rows should contain ready-to-use footnote text — not just metadata. Format each row so the researcher can paste the footnote text directly into Google Docs when converting `[N]` markers.
 
@@ -243,18 +246,21 @@ Per the Types of Non-Cited Statements reference (doc 5). Exemption categories:
 
 ### Footnote formats
 
-**Citing the CA itself:** the conditional approval is a citable source. When grant details (timeline, population, geography, activities, budget, conditions) come directly from the CA, cite it by page number:
-- Sources table entry: `GiveWell, "Conditional approval — [Grantee name]," [Year], p. X (unpublished)`
-- If the CA lacks page numbers, cite the section heading instead: `p. — (section: "Grant activities")`
-- The CA should appear as a row in the Sources table and be cited whenever grant-specific details derive from it
+**The CA is not a citable source.** It is the internal working document used to draft the page. What gets cited on the public page are the underlying sources the CA itself draws from — grant proposals, program documents, evaluator reports, research papers, government data, grantee communications.
 
-**Citing the grant proposal or program documents:** if the researcher has provided these as source documents, cite them with page numbers in the same way.
+**To find the right source for a grant detail:**
+1. Check the CA's own footnotes first — they should point to the underlying document (e.g., a grant proposal, a program report, a call note). Use that source, with page number where available.
+2. Check the researcher-provided source documents (Drive folder / web links) — these often include the grant proposal or program documents that are the real origin of timeline, population, and activity details.
+3. If neither the CA footnotes nor the provided source documents identify a source for a specific detail, add `[SOURCE NEEDED]` — do not invent or assume a source.
 
-**Citing external sources the CA references:** reproduce the citation from the CA's own footnotes in the Sources table using GiveWell conventions.
+**Citing grant proposals and program documents** (the most common source for grant details):
+- Format: `[Grantee name], "[Document title]," [Year], p. X`
+- If provided as a source document in Step 3, use the actual page number from the document
 
-**When no external source exists:** use `From the conditional approval, p. X: "[relevant quote]"` — do not leave grant details uncited simply because the information came from the CA.
+**Citing external sources referenced in the CA:**
+- Reproduce the citation from the CA's own footnote using GiveWell conventions
 
-**When a citation is needed but unavailable:** add a `[SOURCE NEEDED]` row in the Sources table.
+**When a citation is needed but no source can be identified:** add a `[SOURCE NEEDED]` row — flag it clearly so the researcher can supply the underlying source before publication.
 
 ---
 

@@ -63,27 +63,39 @@ After loading the CA, extract and state the following, then ask the user to conf
 
 Once the user confirms the inferences, ask:
 
-1. "Do you have a Google Drive folder with source documents for this grant? If so, please share the link. I'll read those files and use them to verify citations."
-2. "Are there any external web links I should read as background or source material? (Paste any URLs here — I'll fetch what I can.)"
+1. "Do you have a Google Drive folder with source documents for this grant? If so, please share the link. I'll read everything in it before drafting."
+2. "Are there any external web links I should read? (Paste any URLs — I'll fetch what I can before drafting.)"
 
 Wait for responses before proceeding.
 
-**Step 3 — Load source documents.**
+**Step 3 — Load and read all source documents.**
 
-After receiving the user's answers:
+After receiving the user's answers, load everything in a parallel batch:
 
-- **Drive folder or individual Drive files:** extract the ID, use `mcp__hardened-workspace__list_drive_items` to list the folder (if a folder), then `mcp__hardened-workspace__get_doc_content` or `mcp__hardened-workspace__get_drive_file_content` to read each file. Store as **source documents**.
-- **External web links:** fetch each with `WebFetch`. Note which succeeded and which failed (paywalled, blocked). Store retrieved content as source documents; flag failed fetches for `[SOURCE NEEDED]` treatment.
-- **CEA (if URL now provided):** `mcp__hardened-workspace__get_spreadsheet_info` then `mcp__hardened-workspace__read_sheet_values` on the main tab.
+- **Drive folder:** use `mcp__hardened-workspace__list_drive_items` to list the folder, then `mcp__hardened-workspace__get_doc_content` or `mcp__hardened-workspace__get_drive_file_content` to **read the full content** of every file
+- **Individual Drive files:** read each via `mcp__hardened-workspace__get_doc_content` or `mcp__hardened-workspace__get_drive_file_content`
+- **External web links:** fetch each with `WebFetch`; note which succeed and which fail (paywalled, blocked)
+- **CEA (if now provided):** `mcp__hardened-workspace__get_spreadsheet_info` then `mcp__hardened-workspace__read_sheet_values`
+
+Read the **full content** of every source — do not skim. The goal is to have each source's actual content in context so that:
+1. The body text accurately reflects what sources say (not just what the CA says they say)
+2. Footnote text in the Sources table can be drafted from the real source, ready for the researcher to paste when converting `[N]` markers to Google Doc footnotes
+
+For each source successfully read, note:
+- Full citation (author, title, publication, year, URL or "Unpublished")
+- The key claims or data points it contains that are relevant to this grant page
+
+For failed web fetches, mark that source as `[SOURCE NEEDED — fetch failed]`.
 
 **Step 4 — Scan CA footnotes and build initial Sources list.**
 
-Before drafting, read through the CA's own footnotes and citations. For each source cited in the CA:
-- Add a row to a working Sources table with the citation metadata (author, title, year, URL if present)
+Read through the CA's own footnotes and citations. For each source cited in the CA:
+- Check whether you already have its content from Step 3 (Drive or web)
+- If yes: draft the footnote text from the actual source content
+- If no: add a `[SOURCE NEEDED]` row and note what the CA says about it
 - Mark internal Box links, unpublished documents, or GiveWell internal analyses as "Unpublished"
-- Flag any footnote that points to a source the CA describes but doesn't fully cite as `[SOURCE NEEDED]`
 
-This working Sources list is the foundation for the final Sources table — do not rebuild it from scratch during drafting.
+The Sources table rows should contain ready-to-use footnote text — not just metadata. Format each row so the researcher can paste the footnote text directly into Google Docs when converting `[N]` markers.
 
 **Summary section:** include only if the grant is clearly large and complex enough to produce a ~12+ page document (e.g., multi-country top charity renewals). Default to omitting it.
 
@@ -155,6 +167,7 @@ Internal forecasts appear on virtually every page — even small grants. Use a 3
 ### 6. Sources section format
 
 The Sources section is a **two-column table** — see the Sources subsection in the Section-by-Section Drafting Guide for the full format. Key points:
+- Each row should contain the **full footnote text** ready for the researcher to paste into Google Docs when converting `[N]` markers to real footnotes
 - Unpublished sources (emails, calls, internal docs, Box files): write "Unpublished" in the Source column — never include internal Box URLs
 - Informal/email sources: bolded, full format — **Name, Position, Organization, method, Date (unpublished)**
 - Inline `[N]` markers are used on longer, more formal pages; shorter pages may use the Sources table alone without inline markers

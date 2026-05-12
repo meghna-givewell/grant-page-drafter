@@ -414,7 +414,23 @@ List all sources cited in the body. Unpublished sources (emails, internal docs, 
 
 ## Citation Audit Pass
 
-After completing the full draft, run a dedicated citation audit before the sensitivity scan. This is a systematic review — not a skim. Go section by section through every **body section** (skip In a Nutshell and Summary).
+After completing the full draft, run a dedicated citation audit before the sensitivity scan. This is a systematic review — not a skim.
+
+**Step 0 — Reconcile the source-claim mapping table.**
+
+Before the sentence-by-sentence audit, cross-check the source-claim mapping table built in Step 5 against the completed draft:
+
+For each row in the Step 5 table:
+- Confirm the intended claim appears in the draft
+- Confirm it has a `[N]` marker
+- Confirm the Sources table has a matching row for that source
+
+Flag and fix any of the following:
+- **Dropped claim** — a planned claim from Step 5 that is absent from the draft; add the missing content with a `[N]` marker, or flag it in Drafter's Review if it was deliberately omitted
+- **Uncited claim** — a planned claim that made it into the draft but without a `[N]` marker; add the marker and confirm the Sources table row
+- **Missing source row** — a `[N]` marker with no corresponding Sources table entry; add the row
+
+**Step 1 — Go section by section through every body section** (skip In a Nutshell and Summary).
 
 **For every sentence in the body:**
 
@@ -453,6 +469,26 @@ If the user provided a Drive folder or web links at the start, use the retrieved
 - Reduce `[SOURCE NEEDED]` placeholders where the actual source is available
 
 For Drive files not yet read during input handling, fetch them now using `mcp__hardened-workspace__get_doc_content` or `mcp__hardened-workspace__get_drive_file_content`. For failed web fetches, mark the corresponding Sources rows with `[SOURCE NEEDED — fetch failed: URL]`.
+
+**Step 2 — Citation format audit.**
+
+Audit every row in the Sources table against the GiveWell Citations Guide (reference doc 4). The Sources table should be publication-ready — the researcher should not need to reformat citations, only convert `[N]` markers to real footnotes.
+
+*Grant proposals and program documents:*
+- Format: `[Grantee name], "[Document title]," [Year], p. X`
+- Flag any row missing author, title, year, or page number when a specific factual claim is being cited
+
+*External reports, papers, or data:*
+- Format: `[Author(s)], "[Title]," [Publisher/Journal], [Year], [URL if public]`
+- Flag any row missing key metadata
+
+*Informal/unpublished sources (calls, emails):*
+- Format: **[Name, Position, Organization, method, Date (unpublished)]** — bolded
+- Flag any row not in this bolded format
+
+*All rows:*
+- If the Source column contains an internal Box URL, remove it and mark as "Unpublished"
+- If a `[SOURCE NEEDED]` row has been resolved during the audit, draft the citation text and remove the placeholder
 
 **After the audit:** update the Sources table to include any rows added during the audit. Renumber `[N]` markers sequentially if any were inserted out of order.
 
@@ -495,9 +531,9 @@ After the Google Doc is created, run the following pipeline. Do not skip any pha
 
 ---
 
-### Phase 2: First verification round (run Critic and Numbers Verifier in parallel)
+### Phase 2: First verification round (run Critic, Numbers Verifier, and Budget Arithmetic Verifier in parallel)
 
-Spawn both subagents simultaneously using two `Agent` tool calls in a single message.
+Spawn all three subagents simultaneously using three `Agent` tool calls in a single message.
 
 ---
 
@@ -573,7 +609,40 @@ DISCREPANCIES — numbers that differ, are imprecisely stated, or cannot be foun
 UNVERIFIABLE — numbers that appear in the draft but cannot be traced to any source document provided.
 ```
 
-Wait for both agents to return findings before proceeding to Phase 3.
+---
+
+#### Budget Arithmetic Verifier agent (Phase 2, run in parallel with Critic and Numbers Verifier)
+
+```
+You are a budget auditor reviewing a draft GiveWell grant page. You did NOT write this draft. Your only job is to verify that all financial figures in the draft are internally consistent.
+
+GOOGLE DOC ID OF DRAFT: [doc ID]
+USER EMAIL: meghna.ray@givewell.org
+
+CONDITIONAL APPROVAL TEXT:
+[paste full CA text]
+
+YOUR TASKS:
+
+1. Fetch the draft using mcp__hardened-workspace__get_doc_content.
+
+2. Find every financial figure in the draft: the total grant amount stated in prose (e.g., "GiveWell recommended a grant of $X"), every budget line item in the budget table, and any subtotals or totals within the budget table.
+
+3. Check internal consistency:
+   - Do the budget line items sum to the stated budget table total?
+   - Does the budget table total match the grant amount stated in prose?
+   - If the grant is phased or contingent, do the individual tranche amounts sum to the stated total?
+   - If any financial figure appears more than once (e.g., a line item mentioned in prose and in the table), is it stated consistently?
+
+4. Return a structured report:
+
+ARITHMETIC CHECK — show the budget line items, their sum, and the stated total. State whether they match.
+PROSE vs. TABLE CONSISTENCY — compare the grant amount stated in the text to the budget table total. State whether they match.
+DISCREPANCIES — for each mismatch: quote both figures and their locations. Note which figure matches the CA.
+VERIFIED — if all figures are internally consistent, say so explicitly.
+```
+
+Wait for all three agents to return findings before proceeding to Phase 3.
 
 ---
 
@@ -592,6 +661,9 @@ CRITIC FINDINGS:
 
 NUMBERS VERIFIER FINDINGS:
 [paste full Numbers Verifier report]
+
+BUDGET ARITHMETIC VERIFIER FINDINGS:
+[paste full Budget Arithmetic Verifier report]
 
 SOURCE DOCUMENTS:
 [paste full content of each source document, labeled by title]
@@ -624,9 +696,11 @@ YOUR TASKS:
 
 3. Fix each discrepancy in the Numbers Verifier findings. Correct the draft to match the source exactly.
 
-4. Apply the style guide rules and legibility checks across the full document.
+4. Fix each discrepancy in the Budget Arithmetic Verifier findings. Align all figures so they are internally consistent and match the CA.
 
-5. Use mcp__hardened-workspace__modify_doc_text or mcp__hardened-workspace__find_and_replace_doc for all fixes.
+5. Apply the style guide rules and legibility checks across the full document.
+
+6. Use mcp__hardened-workspace__modify_doc_text or mcp__hardened-workspace__find_and_replace_doc for all fixes.
 ```
 
 Wait for the Editor to complete before proceeding to Phase 4.
@@ -661,7 +735,9 @@ YOUR TASKS:
 
 3. Also check for any new issues introduced by the Phase 3 edits.
 
-4. Return a concise findings report. If a category has no remaining issues, say "None found." Be specific about anything that is still wrong.
+4. Run a cross-section consistency check: find every fact, figure, or claim that appears in more than one section of the draft (e.g., the grant total stated in prose and in the budget table; a population figure mentioned in The Grant and again in The Case for the Grant; a reservation named in In a Nutshell and again in Risks and Reservations). For each repeated item, verify it is stated identically in every instance. Add a CROSS-SECTION INCONSISTENCIES section to your findings report listing any mismatches, quoting both instances and their locations.
+
+5. Return a concise findings report. If a category has no remaining issues, say "None found." Be specific about anything that is still wrong.
 ```
 
 ---

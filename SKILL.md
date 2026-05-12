@@ -100,6 +100,20 @@ The CA's own footnotes are the primary path to the real citable sources. Read th
 
 The Sources table rows should contain ready-to-use footnote text — not just metadata. Format each row so the researcher can paste the footnote text directly into Google Docs when converting `[N]` markers.
 
+**Step 5 — Build the source-claim mapping table.**
+
+Before writing any prose, produce a structured planning table that maps every major claim you intend to make to its supporting source. This is the Drafter's citation reference — every row in this table will become a `[N]` marker in the draft.
+
+| Intended claim | Source document | Page / section | Supporting quote or data |
+|---|---|---|---|
+| Grant will run Jan 2025–Dec 2027 | Grant proposal | p. 3 | "Project period: January 2025–December 2027" |
+| Program will reach 45,000 children | Program design document | p. 7 | "Target beneficiaries: 45,000 children under five" |
+| ... | ... | ... | ... |
+
+Cover every factual claim you plan to make across all sections: grant timeline, target population, geography, activities, budget line items, efficacy data, organizational facts, evidence claims. If you cannot identify a source for an intended claim, mark it `[SOURCE NEEDED]` in the table before drafting begins — do not write uncited claims hoping to find sources later.
+
+This table is internal to the drafting process and does not appear in the output Google Doc.
+
 **Summary section:** include only if the grant is clearly large and complex enough to produce a ~12+ page document (e.g., multi-country top charity renewals). Default to omitting it.
 
 **Section selection and sensitivities:** use judgment based on the CA. The sensitivity scan will surface potential issues.
@@ -475,17 +489,19 @@ User email for Google Workspace MCP calls: `meghna.ray@givewell.org`
 
 ---
 
-## Post-Draft Pipeline: Critic and Editor Agents
+## Post-Draft Pipeline: Multi-Agent Verification and Editing
 
-After the Google Doc is created, run a two-agent verification and editing pipeline. Do not skip this — it is required for every draft.
+After the Google Doc is created, run the following pipeline. Do not skip any phase — each one is required for every draft.
 
 ---
 
-### Step A: Spawn the Critic agent
+### Phase 2: First verification round (run Critic and Numbers Verifier in parallel)
 
-Use the `Agent` tool to spawn a Critic subagent. The Critic has no memory of the drafting session and approaches the document entirely fresh.
+Spawn both subagents simultaneously using two `Agent` tool calls in a single message.
 
-Pass the following in the agent prompt (include full text, not references — the subagent has no access to this conversation's context):
+---
+
+#### Critic agent (Phase 2)
 
 ```
 You are an independent citation auditor reviewing a draft GiveWell grant page. You did NOT write this draft. Your job is to find every problem — be thorough and adversarial. Do not give the benefit of the doubt.
@@ -497,48 +513,142 @@ CONDITIONAL APPROVAL TEXT:
 [paste full CA text]
 
 SOURCE DOCUMENTS:
-[paste full content of each source document read in Step 3, labeled by title]
+[paste full content of each source document, labeled by title]
 
 YOUR TASKS:
 
-1. Fetch the draft using mcp__hardened-workspace__get_doc_content on the Doc ID above.
+1. Fetch the draft using mcp__hardened-workspace__get_doc_content.
 
-2. Read the draft in full. Then produce a structured findings report with these sections:
+2. Produce a structured findings report with these sections:
 
 UNCITED CLAIMS
-List every factual sentence in the body that lacks a [N] marker. Include the section name and the exact sentence. Pay special attention to: grant timeline, target population, geography, activities, budget figures, conditions, grantee background, and efficacy claims.
+List every factual sentence in the body lacking a [N] marker. Include section name and exact sentence. Specifically check: grant timeline, target population, geography, activities, budget figures, conditions, grantee background, efficacy claims, implementing partner roles.
 
 FACTUAL MISMATCHES
-List every claim in the draft that contradicts, overstates, or cannot be verified against the CA or source documents. For each, quote the draft claim and what the CA/source actually says.
+List every claim in the draft that contradicts, overstates, or cannot be verified against the CA or source documents. Quote the draft claim and what the CA/source actually says.
 
-MISSING CONTENT
-List any information in the CA that is material to explaining the grant but does not appear in the draft — e.g., a key condition, a specific activity, a major reservation, a critical uncertainty.
+MISSING CONTENT (inverse coverage check)
+Read the CA and source documents first. Then list any material content that appears in the CA — key conditions, significant activities, major reservations, critical uncertainties — that is absent from the draft entirely.
 
 SOURCE TABLE ERRORS
-List any Sources table row where: (a) the citation doesn't support the claim it's attached to, (b) the document is cited but the page number is missing when one is needed, or (c) a [SOURCE NEEDED] placeholder exists that you can resolve from the source documents provided.
+List rows where: (a) the citation doesn't support the attached claim, (b) a page number is missing when one is needed, or (c) a [SOURCE NEEDED] placeholder that you can resolve from the provided source documents.
+
+SOURCE UTILIZATION AUDIT
+For each source document provided, state whether it was cited at least once in the draft. List any source that was provided but never cited, and note whether this seems like an oversight or is acceptable.
 
 SENSITIVITY FLAGS
-List any [[POTENTIALLY SENSITIVE]] markers found and note whether the flagged content should be removed or is acceptable.
+List any [[POTENTIALLY SENSITIVE]] markers and whether the flagged content should be removed or is acceptable.
 
-Return the full structured report. Be specific — quote exact sentences and section names so the Editor agent can act on each finding precisely.
+Be specific — quote exact sentences and section names so the Editor can act on each finding precisely.
 ```
-
-Wait for the Critic agent to return its findings before proceeding.
 
 ---
 
-### Step B: Spawn the Editor agent
-
-Use the `Agent` tool to spawn an Editor subagent. Pass the following in the agent prompt:
+#### Numbers Verifier agent (Phase 2, run in parallel with Critic)
 
 ```
-You are an editor making targeted corrections to a draft GiveWell grant page. You did NOT write this draft. Make only the changes needed to fix the problems listed in the Critic's findings below — do not rewrite sections that are not flagged.
+You are a numbers auditor reviewing a draft GiveWell grant page. You did NOT write this draft. Your only job is to verify that every number in the draft exactly matches the source documents.
 
 GOOGLE DOC ID OF DRAFT: [doc ID]
 USER EMAIL: meghna.ray@givewell.org
 
-CRITIC'S FINDINGS:
-[paste full Critic findings report]
+CONDITIONAL APPROVAL TEXT:
+[paste full CA text]
+
+SOURCE DOCUMENTS:
+[paste full content of each source document, labeled by title]
+
+YOUR TASKS:
+
+1. Fetch the draft using mcp__hardened-workspace__get_doc_content.
+
+2. Extract every number from the draft: dollar amounts, percentages, dates, counts, reach figures, cost-effectiveness multiples, confidence intervals, mortality rates — every numerical value.
+
+3. For each number, locate the corresponding value in the CA or source documents and check for an exact match.
+
+4. Return a structured report:
+
+VERIFIED NUMBERS — numbers that match exactly (list briefly)
+DISCREPANCIES — numbers that differ, are imprecisely stated, or cannot be found in any source. For each: quote the draft, quote the source, note the difference.
+UNVERIFIABLE — numbers that appear in the draft but cannot be traced to any source document provided.
+```
+
+Wait for both agents to return findings before proceeding to Phase 3.
+
+---
+
+### Phase 3: First editing round
+
+Spawn the Editor agent with all Phase 2 findings combined.
+
+```
+You are an editor making targeted corrections to a draft GiveWell grant page. You did NOT write this draft. Fix every problem identified in the findings below. Do not rewrite sections that are not flagged.
+
+GOOGLE DOC ID OF DRAFT: [doc ID]
+USER EMAIL: meghna.ray@givewell.org
+
+CRITIC FINDINGS:
+[paste full Critic report]
+
+NUMBERS VERIFIER FINDINGS:
+[paste full Numbers Verifier report]
+
+SOURCE DOCUMENTS:
+[paste full content of each source document, labeled by title]
+
+GIVEWELL STYLE GUIDE RULES (apply to the whole document while editing):
+- "Program participants" not "beneficiaries"
+- Sentence-case for all headers (first word + proper nouns only)
+- Oxford comma in all lists
+- American English spelling
+- Benchmark language: "Xx times as cost-effective as GiveWell's benchmark" — never "x GiveDirectly" or "x cash"
+- Approved uncertainty phrases: "Our best guess is," "We would expect that," "We are unsure as to," "It seems plausible that," "We believe" — do not paraphrase these into non-standard alternatives
+- No facts introduced from outside the CA and source documents
+
+LEGIBILITY CHECKS (verify and fix):
+- The In a Nutshell gives a complete standalone picture — a reader who reads nothing else understands the grant
+- The bulleted reasons in the In a Nutshell use exactly the same wording as the subsection headers in The Case for the Grant
+- The theory of change in The Grant section explains *why* the funding leads to outcomes, not just that it does
+- For TA grants: the page explains why without GiveWell's funding the program wouldn't happen
+
+YOUR TASKS:
+
+1. Fetch the current draft using mcp__hardened-workspace__get_doc_content.
+
+2. Fix each item in the Critic findings:
+   - UNCITED CLAIMS → add [N] marker + Sources table row with page number from source docs; use [SOURCE NEEDED] if no source found
+   - FACTUAL MISMATCHES → correct to match source; flag significant corrections
+   - MISSING CONTENT → add to appropriate section with [N] marker and source row
+   - SOURCE TABLE ERRORS → fix citation, add page numbers, resolve [SOURCE NEEDED] where possible
+   - SENSITIVITY FLAGS → remove or redact; note action
+
+3. Fix each discrepancy in the Numbers Verifier findings. Correct the draft to match the source exactly.
+
+4. Apply the style guide rules and legibility checks across the full document.
+
+5. Use mcp__hardened-workspace__modify_doc_text or mcp__hardened-workspace__find_and_replace_doc for all fixes.
+```
+
+Wait for the Editor to complete before proceeding to Phase 4.
+
+---
+
+### Phase 4: Second verification round (run Critic 2 and External Reader in parallel)
+
+Spawn both subagents simultaneously.
+
+---
+
+#### Critic 2 agent (Phase 4)
+
+```
+You are an independent citation auditor reviewing a revised draft GiveWell grant page. This is a second-pass review after editing. Focus on what is still wrong — do not re-flag issues that were clearly resolved.
+
+GOOGLE DOC ID OF DRAFT: [doc ID]
+USER EMAIL: meghna.ray@givewell.org
+
+CONDITIONAL APPROVAL TEXT:
+[paste full CA text]
 
 SOURCE DOCUMENTS:
 [paste full content of each source document, labeled by title]
@@ -547,41 +657,99 @@ YOUR TASKS:
 
 1. Fetch the current draft using mcp__hardened-workspace__get_doc_content.
 
-2. For each finding in the Critic's report, make the appropriate fix:
+2. Check for residual problems using the same categories as the first Critic: uncited claims, factual mismatches, missing content, source table errors, numbers accuracy, sensitivity flags.
 
-   UNCITED CLAIMS → add a [N] marker after the claim and add the corresponding row to the Sources table. Use the source documents to identify the correct source and page number. If no source can be identified, insert [SOURCE NEEDED].
+3. Also check for any new issues introduced by the Phase 3 edits.
 
-   FACTUAL MISMATCHES → correct the claim to match what the CA or source document actually says. If the correction is significant, note it in the Drafter's Review.
-
-   MISSING CONTENT → add the missing content to the appropriate section with a [N] marker and source row.
-
-   SOURCE TABLE ERRORS → fix the citation, add missing page numbers from the source documents, or resolve [SOURCE NEEDED] placeholders where the source document is available.
-
-   SENSITIVITY FLAGS → remove or redact flagged content as appropriate; note each action in the Drafter's Review.
-
-3. Use mcp__hardened-workspace__modify_doc_text or mcp__hardened-workspace__find_and_replace_doc to make each fix directly in the Google Doc.
-
-4. After all fixes are made, add a "Drafter's Review" section at the end of the document (Heading 1) with the following subsections:
-
-   **Footnote conversion** — remind the researcher: "This draft uses [1], [2] etc. as placeholder markers. Before publication, replace each with a real Google Doc footnote (Cmd+Option+F on Mac), pasting the citation text from the Sources table. The Sources table can then be removed."
-
-   **What was fixed** — summarize the changes made based on the Critic's findings (grouped by category: citations added, factual corrections, content added, source table fixes).
-
-   **Still needs researcher attention** — list any remaining [SOURCE NEEDED] placeholders, [FORECAST NEEDED] placeholders, [SECTION STUB] markers, unresolved sensitivity flags, and any Critic findings you could not resolve from the available source documents.
-
-   **Potential inconsistencies** — flag anything in the CA that seemed contradictory or ambiguous that the researcher should clarify.
+4. Return a concise findings report. If a category has no remaining issues, say "None found." Be specific about anything that is still wrong.
 ```
-
-Wait for the Editor agent to complete before reporting back to the user.
 
 ---
 
-### Step C: Report to the user
+#### External Reader agent (Phase 4, run in parallel with Critic 2)
 
-Once the Editor agent completes, confirm to the user:
+```
+You are an educated external stakeholder reading a draft GiveWell grant page for the first time. You have no prior knowledge of GiveWell's internal processes, the grantee, or this grant. Read the page as a curious, intelligent reader who wants to understand why GiveWell made this grant.
+
+GOOGLE DOC ID OF DRAFT: [doc ID]
+USER EMAIL: meghna.ray@givewell.org
+
+YOUR TASKS:
+
+1. Fetch the draft using mcp__hardened-workspace__get_doc_content.
+
+2. Read it as an outsider and report:
+
+UNANSWERED QUESTIONS — What questions does a reader naturally ask that the page does not answer? (e.g., "Why this grantee and not another?" "How will GiveWell know if this worked?")
+
+UNCLEAR REASONING — Where is the argument for why GiveWell made this grant unclear, assumed, or hard to follow?
+
+JARGON AND UNEXPLAINED TERMS — Any technical terms, acronyms, or GiveWell-specific concepts that are used without explanation.
+
+STRUCTURAL CONFUSION — Anything that is confusing about the page's organization or flow.
+
+Do not comment on citation formatting or style — focus only on whether the page is clear, complete, and persuasive to an outside reader.
+```
+
+Wait for both agents to complete before proceeding to Phase 5.
+
+---
+
+### Phase 5: Final editing round and Drafter's Review
+
+Spawn the Final Editor agent with all Phase 4 findings.
+
+```
+You are an editor making final corrections to a draft GiveWell grant page and writing the Drafter's Review section.
+
+GOOGLE DOC ID OF DRAFT: [doc ID]
+USER EMAIL: meghna.ray@givewell.org
+
+CRITIC 2 FINDINGS:
+[paste Critic 2 report]
+
+EXTERNAL READER FINDINGS:
+[paste External Reader report]
+
+SOURCE DOCUMENTS:
+[paste full content of each source document, labeled by title]
+
+YOUR TASKS:
+
+1. Fetch the current draft using mcp__hardened-workspace__get_doc_content.
+
+2. Fix all remaining issues from Critic 2: apply the same fix logic as Phase 3.
+
+3. Address External Reader findings where possible:
+   - Add clarifying sentences for unanswered questions where the answer is in the CA or source documents
+   - Improve unclear reasoning by making the argument more explicit
+   - Define jargon on first use (parenthetical or footnote)
+   - Improve structure or flow where flagged
+   - If an External Reader concern cannot be resolved from available sources, note it in the Drafter's Review for the researcher
+
+4. Add a "Drafter's Review" section at the end of the document (Heading 1) with these subsections:
+
+   **Footnote conversion**
+   "This draft uses [1], [2] etc. as placeholder markers. Before publication, replace each with a real Google Doc footnote (Cmd+Option+F on Mac) and paste the citation text from the Sources table. The Sources table can then be removed."
+
+   **What was fixed across all editing rounds**
+   Summarize changes grouped by type: citations added, factual corrections, numbers corrected, content added, style fixes, clarity improvements.
+
+   **Still needs researcher attention**
+   List all remaining: [SOURCE NEEDED] placeholders, [FORECAST NEEDED] placeholders, [SECTION STUB] markers, unresolved sensitivity flags, External Reader concerns that couldn't be resolved, and anything the researcher must verify or supply before publication.
+
+   **Potential inconsistencies**
+   Anything in the CA that seemed contradictory or ambiguous that the researcher should clarify before publication.
+```
+
+---
+
+### Phase 6: Report to the user
+
+Once the Final Editor completes, report to the user:
 - The Google Doc link
-- A brief summary of what the Critic found and what the Editor fixed
-- Any items flagged in "Still needs researcher attention" that require action before publication
+- How many rounds of fixes were made and the main categories of issues found
+- A concise list of what still needs researcher attention before publication
 
 ---
 

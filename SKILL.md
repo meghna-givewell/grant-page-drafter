@@ -157,7 +157,7 @@ Internal forecasts appear on virtually every page — even small grants. Use a 3
 The Sources section is a **two-column table** — see the Sources subsection in the Section-by-Section Drafting Guide for the full format. Key points:
 - Unpublished sources (emails, calls, internal docs, Box files): write "Unpublished" in the Source column — never include internal Box URLs
 - Informal/email sources: bolded, full format — **Name, Position, Organization, method, Date (unpublished)**
-- Inline `[^N]` markers are used on longer, more formal pages; shorter pages may use the Sources table alone without inline markers
+- Inline `[N]` markers are used on longer, more formal pages; shorter pages may use the Sources table alone without inline markers
 
 ---
 
@@ -165,15 +165,16 @@ The Sources section is a **two-column table** — see the Sources subsection in 
 
 Citation density varies significantly by grant type. Calibrate against the example pages loaded:
 
-- **Large program grants / top charity renewals**: High citation density. Every specific factual claim (statistics, evidence claims, organization facts, program activities) should have an inline `[^N]` marker and a corresponding row in the Sources table.
+- **Large program grants / top charity renewals**: High citation density. Every specific factual claim (statistics, evidence claims, organization facts, program activities) should have an inline `[N]` marker and a corresponding row in the Sources table.
 - **Medium grants (research, TA, gap-fill)**: Moderate density. Key factual claims are cited; assessments and GiveWell's reasoning are not.
 - **Small discretionary grants**: Lighter citations. A Sources table is still expected, but not every sentence in the body requires a marker. Focus on citing external facts and organization descriptions that a reader might want to verify.
 
 ### Inserting footnote markers (for higher-density pages)
 
-- Insert `[^N]` immediately after each factual claim, numbered sequentially from `[^1]`
+- Insert `[N]` immediately after each factual claim, numbered sequentially from `[1]`
 - Multiple closely related claims may share one footnote
 - Place markers at the end of the sentence or clause, before the period
+- These are placeholder markers — the researcher will convert each `[N]` to a real Google Doc footnote (Cmd+Option+F) before publication, using the Sources table as reference
 
 ### What to cite
 
@@ -207,7 +208,7 @@ Per the Types of Non-Cited Statements reference (doc 5). Exemption categories:
 - "Told us" statements: things a grantee or partner stated directly to GiveWell in a call or email (cite the call/email in the Sources table, but no inline marker needed for the paraphrase)
 
 **Section-level exemptions**
-- **In a Nutshell** and **Summary** claims are exempt from inline `[^N]` markers — but every claim made there must be supported with a citation somewhere in the body sections
+- **In a Nutshell** and **Summary** claims are exempt from inline `[N]` markers — but every claim made there must be supported with a citation somewhere in the body sections
 
 ### Footnote formats
 
@@ -360,7 +361,7 @@ After completing the full draft, run a dedicated citation audit before the sensi
 
 1. **Is this a factual claim?** A factual claim is any sentence asserting a statistic, organizational fact, program activity, study result, or external assertion — i.e., something a reader could look up or dispute.
 
-2. **If yes: does it have a `[^N]` marker?**
+2. **If yes: does it have a `[N]` marker?**
    - If no marker → add one and create or confirm the corresponding Sources table row
    - If there is a marker → confirm the Sources table has a matching entry
 
@@ -382,7 +383,7 @@ If the user provided a Drive folder or web links at the start, use the retrieved
 
 For Drive files not yet read during input handling, fetch them now using `mcp__hardened-workspace__get_doc_content` or `mcp__hardened-workspace__get_drive_file_content`. For failed web fetches, mark the corresponding Sources rows with `[SOURCE NEEDED — fetch failed: URL]`.
 
-**After the audit:** update the Sources table to include any rows added during the audit. Renumber `[^N]` markers sequentially if any were inserted out of order.
+**After the audit:** update the Sources table to include any rows added during the audit. Renumber `[N]` markers sequentially if any were inserted out of order.
 
 ---
 
@@ -403,11 +404,12 @@ After the citation audit, scan the entire document and flag any of the following
 
 Add a "Drafter's Review" section at the end of the output doc:
 
-1. **Missing citations** — list every `[SOURCE NEEDED]` row in Sources
-2. **Missing forecasts** — list every `[FORECAST NEEDED]` placeholder
-3. **Information gaps** — sections that could not be drafted because the CA lacked detail
-4. **Potential inconsistencies** — anything in the CA that seemed contradictory or ambiguous
-5. **Sensitivity flags** — count and location of all `[[POTENTIALLY SENSITIVE]]` instances
+1. **Convert inline markers to footnotes** — the draft uses `[1]`, `[2]` etc. as placeholder markers. Before publication, replace each marker with a real Google Doc footnote (place cursor at the marker, press Cmd+Option+F on Mac, then paste the citation text from the corresponding row in the Sources table). The Sources table can then be removed or kept as an appendix.
+2. **Missing citations** — list every `[SOURCE NEEDED]` row in Sources
+3. **Missing forecasts** — list every `[FORECAST NEEDED]` placeholder
+4. **Information gaps** — sections stubbed due to insufficient CA detail
+5. **Potential inconsistencies** — anything in the CA that seemed contradictory or ambiguous
+6. **Sensitivity flags** — count and location of all `[[POTENTIALLY SENSITIVE]]` instances
 
 ---
 

@@ -10,10 +10,12 @@ Given a conditional approval document, this skill:
 2. Loads GiveWell's style guide, legibility guidance, citation standards, and relevant example pages
 3. Asks two setup questions: whether you have a source documents folder and any external web links to read
 4. Scans the CA's own footnotes to build an initial sources list
-5. Drafts each section of the grant page in order, with inline citation markers (`[^N]`) and a two-column Sources table
+5. Drafts each section of the grant page in order, with inline citation markers (`[1]`, `[2]`, etc.) and a two-column Sources table
 6. Runs a citation audit pass — sentence by sentence — to catch uncited factual claims
 7. Flags potentially sensitive content with `[[POTENTIALLY SENSITIVE]]`
 8. Outputs a formatted Google Doc with a Drafter's Review section listing gaps, missing citations, and flags for researcher attention
+
+> **Note on footnotes:** The draft uses `[1]`, `[2]` etc. as placeholder markers. Before publication, convert each to a real Google Doc footnote (Cmd+Option+F on Mac) using the Sources table as reference. The Sources table can then be removed.
 
 ## Output
 

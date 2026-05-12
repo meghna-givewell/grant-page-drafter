@@ -457,19 +457,6 @@ After the citation audit, scan the entire document and flag any of the following
 
 ---
 
-## Post-Draft Review
-
-Add a "Drafter's Review" section at the end of the output doc:
-
-1. **Convert inline markers to footnotes** — the draft uses `[1]`, `[2]` etc. as placeholder markers. Before publication, replace each marker with a real Google Doc footnote (place cursor at the marker, press Cmd+Option+F on Mac, then paste the citation text from the corresponding row in the Sources table). The Sources table can then be removed or kept as an appendix.
-2. **Missing citations** — list every `[SOURCE NEEDED]` row in Sources
-3. **Missing forecasts** — list every `[FORECAST NEEDED]` placeholder
-4. **Information gaps** — sections stubbed due to insufficient CA detail
-5. **Potential inconsistencies** — anything in the CA that seemed contradictory or ambiguous
-6. **Sensitivity flags** — count and location of all `[[POTENTIALLY SENSITIVE]]` instances
-
----
-
 ## Output Format
 
 Create a Google Doc via `mcp__hardened-workspace__create_doc` titled:
@@ -482,9 +469,119 @@ Apply formatting via `mcp__hardened-workspace__batch_update_doc`:
 - Bulleted lists for reasons/reservations in the nutshell and case sections
 - Tables for budget, Simple CEA, internal forecasts, and sources
 
-Add the "Drafter's Review" section at the end after Sources.
+Note the Google Doc ID — it is passed to the Critic and Editor agents in the next steps.
 
 User email for Google Workspace MCP calls: `meghna.ray@givewell.org`
+
+---
+
+## Post-Draft Pipeline: Critic and Editor Agents
+
+After the Google Doc is created, run a two-agent verification and editing pipeline. Do not skip this — it is required for every draft.
+
+---
+
+### Step A: Spawn the Critic agent
+
+Use the `Agent` tool to spawn a Critic subagent. The Critic has no memory of the drafting session and approaches the document entirely fresh.
+
+Pass the following in the agent prompt (include full text, not references — the subagent has no access to this conversation's context):
+
+```
+You are an independent citation auditor reviewing a draft GiveWell grant page. You did NOT write this draft. Your job is to find every problem — be thorough and adversarial. Do not give the benefit of the doubt.
+
+GOOGLE DOC ID OF DRAFT: [doc ID]
+USER EMAIL: meghna.ray@givewell.org
+
+CONDITIONAL APPROVAL TEXT:
+[paste full CA text]
+
+SOURCE DOCUMENTS:
+[paste full content of each source document read in Step 3, labeled by title]
+
+YOUR TASKS:
+
+1. Fetch the draft using mcp__hardened-workspace__get_doc_content on the Doc ID above.
+
+2. Read the draft in full. Then produce a structured findings report with these sections:
+
+UNCITED CLAIMS
+List every factual sentence in the body that lacks a [N] marker. Include the section name and the exact sentence. Pay special attention to: grant timeline, target population, geography, activities, budget figures, conditions, grantee background, and efficacy claims.
+
+FACTUAL MISMATCHES
+List every claim in the draft that contradicts, overstates, or cannot be verified against the CA or source documents. For each, quote the draft claim and what the CA/source actually says.
+
+MISSING CONTENT
+List any information in the CA that is material to explaining the grant but does not appear in the draft — e.g., a key condition, a specific activity, a major reservation, a critical uncertainty.
+
+SOURCE TABLE ERRORS
+List any Sources table row where: (a) the citation doesn't support the claim it's attached to, (b) the document is cited but the page number is missing when one is needed, or (c) a [SOURCE NEEDED] placeholder exists that you can resolve from the source documents provided.
+
+SENSITIVITY FLAGS
+List any [[POTENTIALLY SENSITIVE]] markers found and note whether the flagged content should be removed or is acceptable.
+
+Return the full structured report. Be specific — quote exact sentences and section names so the Editor agent can act on each finding precisely.
+```
+
+Wait for the Critic agent to return its findings before proceeding.
+
+---
+
+### Step B: Spawn the Editor agent
+
+Use the `Agent` tool to spawn an Editor subagent. Pass the following in the agent prompt:
+
+```
+You are an editor making targeted corrections to a draft GiveWell grant page. You did NOT write this draft. Make only the changes needed to fix the problems listed in the Critic's findings below — do not rewrite sections that are not flagged.
+
+GOOGLE DOC ID OF DRAFT: [doc ID]
+USER EMAIL: meghna.ray@givewell.org
+
+CRITIC'S FINDINGS:
+[paste full Critic findings report]
+
+SOURCE DOCUMENTS:
+[paste full content of each source document, labeled by title]
+
+YOUR TASKS:
+
+1. Fetch the current draft using mcp__hardened-workspace__get_doc_content.
+
+2. For each finding in the Critic's report, make the appropriate fix:
+
+   UNCITED CLAIMS → add a [N] marker after the claim and add the corresponding row to the Sources table. Use the source documents to identify the correct source and page number. If no source can be identified, insert [SOURCE NEEDED].
+
+   FACTUAL MISMATCHES → correct the claim to match what the CA or source document actually says. If the correction is significant, note it in the Drafter's Review.
+
+   MISSING CONTENT → add the missing content to the appropriate section with a [N] marker and source row.
+
+   SOURCE TABLE ERRORS → fix the citation, add missing page numbers from the source documents, or resolve [SOURCE NEEDED] placeholders where the source document is available.
+
+   SENSITIVITY FLAGS → remove or redact flagged content as appropriate; note each action in the Drafter's Review.
+
+3. Use mcp__hardened-workspace__modify_doc_text or mcp__hardened-workspace__find_and_replace_doc to make each fix directly in the Google Doc.
+
+4. After all fixes are made, add a "Drafter's Review" section at the end of the document (Heading 1) with the following subsections:
+
+   **Footnote conversion** — remind the researcher: "This draft uses [1], [2] etc. as placeholder markers. Before publication, replace each with a real Google Doc footnote (Cmd+Option+F on Mac), pasting the citation text from the Sources table. The Sources table can then be removed."
+
+   **What was fixed** — summarize the changes made based on the Critic's findings (grouped by category: citations added, factual corrections, content added, source table fixes).
+
+   **Still needs researcher attention** — list any remaining [SOURCE NEEDED] placeholders, [FORECAST NEEDED] placeholders, [SECTION STUB] markers, unresolved sensitivity flags, and any Critic findings you could not resolve from the available source documents.
+
+   **Potential inconsistencies** — flag anything in the CA that seemed contradictory or ambiguous that the researcher should clarify.
+```
+
+Wait for the Editor agent to complete before reporting back to the user.
+
+---
+
+### Step C: Report to the user
+
+Once the Editor agent completes, confirm to the user:
+- The Google Doc link
+- A brief summary of what the Critic found and what the Editor fixed
+- Any items flagged in "Still needs researcher attention" that require action before publication
 
 ---
 

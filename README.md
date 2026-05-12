@@ -92,7 +92,7 @@ git clone https://github.com/meghna-givewell/grant-page-drafter.git \
 
 ## Tips for better output
 
-- **Source documents folder:** Create a Google Drive folder for the grant, upload key PDFs and reports (grant proposal, program design document, evaluator reports), and share the link when prompted. The skill reads the full content of every file before drafting — this is the single biggest driver of citation quality.
+- **Source documents:** Share a Google Drive folder containing the grant proposal, program design document, evaluator reports, and any other key files — or share individual Drive file links if you don't have a folder. The skill reads the full content of every file before drafting — this is the single biggest driver of citation quality.
 - **External links:** Paste any relevant URLs (WHO reports, government data, evaluator websites) when prompted. Claude will fetch what it can.
 - **CEA:** Provide the CEA URL upfront or when prompted — it enables the Simple CEA table to be populated with real numbers and allows the Numbers Verifier to cross-check cost-effectiveness figures.
 

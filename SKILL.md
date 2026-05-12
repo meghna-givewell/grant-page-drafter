@@ -22,7 +22,9 @@ If no CA URL is provided, ask for it before proceeding. The CEA URL is optional 
 
 ## Reference Documents
 
-Load these in a **single parallel batch** before beginning. All links are in `reference_docs/LINKS.md` in the grant-page-drafting skill directory.
+Document IDs for all reference docs are in `reference_docs/LINKS.md` in the grant-page-drafting skill directory. **Read that file first using the `Read` tool**, then load documents as follows:
+
+**Load docs 1–6 immediately** (after reading the CA in Input Handling) in a single parallel batch using `mcp__hardened-workspace__get_doc_content`:
 
 1. **Grant Page Template** — canonical section structure and content expectations
 2. **Legibility Guidance** — how to write each section clearly; Simple CEA format; In a Nutshell standards; outside-the-model guidance; theory of change requirements for TA grants
@@ -30,7 +32,10 @@ Load these in a **single parallel batch** before beginning. All links are in `re
 4. **GiveWell Citations Guide** — footnote format, source nickname conventions
 5. **Types of Non-Cited Statements** — which claims do not need footnotes
 6. **Language and Structure Guide** — approved turns of phrase for uncertainty, process depth, and structural clarity
-7. **2–3 example grant pages** — select from LINKS.md the examples that best match the grant type being drafted (large delivery, TA, research, small discretionary)
+
+**Load doc 7 after Step 1** (once the grant type is confirmed):
+
+7. **2–3 example grant pages** — select from the Examples table in LINKS.md the entries that best match the confirmed grant type (large delivery, TA, research, small discretionary)
 
 Treat all reference documents as authoritative.
 
@@ -55,7 +60,7 @@ After loading the CA, extract and state the following, then ask the user to conf
 > - **Grant name and grantee:** [extracted]
 > - **Grant type:** [direct delivery / technical assistance / research/scoping / small discretionary]
 > - **Foreign aid relevance:** [Yes — related to USAID/PEPFAR funding cuts / No]
-> - **CEA:** [linked in CA / not found — do you have a CEA URL to share?]
+> - **CEA:** [already provided by user / linked in CA at [URL] / not found — do you have a CEA URL to share?]
 >
 > Does this look right? Please correct anything before I continue."
 
@@ -63,7 +68,7 @@ After loading the CA, extract and state the following, then ask the user to conf
 
 Once the user confirms the inferences, ask:
 
-1. "Do you have a Google Drive folder with source documents for this grant? If so, please share the link. I'll read everything in it before drafting."
+1. "Do you have a Google Drive folder with source documents for this grant? If so, please share the link. I'll read everything in it before drafting. You can also share links to individual Drive files if you don't have a folder."
 2. "Are there any external web links I should read? (Paste any URLs — I'll fetch what I can before drafting.)"
 
 Wait for responses before proceeding.
@@ -73,9 +78,9 @@ Wait for responses before proceeding.
 After receiving the user's answers, load everything in a parallel batch:
 
 - **Drive folder:** use `mcp__hardened-workspace__list_drive_items` to list the folder, then `mcp__hardened-workspace__get_doc_content` or `mcp__hardened-workspace__get_drive_file_content` to **read the full content** of every file
-- **Individual Drive files:** read each via `mcp__hardened-workspace__get_doc_content` or `mcp__hardened-workspace__get_drive_file_content`
+- **Individual Drive files (if shared instead of or in addition to a folder):** read each via `mcp__hardened-workspace__get_doc_content` or `mcp__hardened-workspace__get_drive_file_content`
 - **External web links:** fetch each with `WebFetch`; note which succeed and which fail (paywalled, blocked)
-- **CEA (if now provided):** `mcp__hardened-workspace__get_spreadsheet_info` then `mcp__hardened-workspace__read_sheet_values`
+- **CEA (if provided in response to Step 1 and not already loaded in Input Handling):** `mcp__hardened-workspace__get_spreadsheet_info` then `mcp__hardened-workspace__read_sheet_values`
 
 Read the **full content** of every source — do not skim. The goal is to have each source's actual content in context so that:
 1. The body text accurately reflects what sources say (not just what the CA says they say)
@@ -210,7 +215,7 @@ Citation density varies significantly by grant type. Calibrate against the examp
 
 Every factual claim that a reader could look up or dispute needs a `[N]` marker. This includes — but is not limited to:
 
-**Grant details** (cite to the CA, grant proposal, or program document with page number)
+**Grant details** (cite to the grant proposal, program document, or other underlying source with page number — not the CA itself)
 - Grant timeline, start and end dates, milestones
 - Target population: who will be served, eligibility criteria, estimated reach
 - Geography: countries, regions, districts covered
@@ -468,7 +473,7 @@ If the user provided a Drive folder or web links at the start, use the retrieved
 - Identify any claims that are overstated or understated relative to the source
 - Reduce `[SOURCE NEEDED]` placeholders where the actual source is available
 
-For Drive files not yet read during input handling, fetch them now using `mcp__hardened-workspace__get_doc_content` or `mcp__hardened-workspace__get_drive_file_content`. For failed web fetches, mark the corresponding Sources rows with `[SOURCE NEEDED — fetch failed: URL]`.
+For Drive files not yet read during Step 3, fetch them now using `mcp__hardened-workspace__get_doc_content` or `mcp__hardened-workspace__get_drive_file_content`. For failed web fetches, mark the corresponding Sources rows with `[SOURCE NEEDED — fetch failed: URL]`.
 
 **Step 2 — Citation format audit.**
 
@@ -656,6 +661,9 @@ You are an editor making targeted corrections to a draft GiveWell grant page. Yo
 GOOGLE DOC ID OF DRAFT: [doc ID]
 USER EMAIL: meghna.ray@givewell.org
 
+CONDITIONAL APPROVAL TEXT:
+[paste full CA text]
+
 CRITIC FINDINGS:
 [paste full Critic report]
 
@@ -781,6 +789,9 @@ You are an editor making final corrections to a draft GiveWell grant page and wr
 GOOGLE DOC ID OF DRAFT: [doc ID]
 USER EMAIL: meghna.ray@givewell.org
 
+CONDITIONAL APPROVAL TEXT:
+[paste full CA text]
+
 CRITIC 2 FINDINGS:
 [paste Critic 2 report]
 
@@ -823,7 +834,7 @@ YOUR TASKS:
 ### Phase 6: Report to the user
 
 Once the Final Editor completes, report to the user:
-- The Google Doc link
+- The Google Doc link: `https://docs.google.com/document/d/[doc ID]/edit`
 - How many rounds of fixes were made and the main categories of issues found
 - A concise list of what still needs researcher attention before publication
 

@@ -191,11 +191,29 @@ Citation density varies significantly by grant type. Calibrate against the examp
 
 ### What to cite
 
-- Statistics and numerical data (mortality rates, coverage figures, program reach, costs)
-- Study-derived results or evidence claims
-- Statements about what a specific organization does, has done, or has found
-- Descriptions of specific grant activities (each distinct activity should be traceable to a source)
+Every factual claim that a reader could look up or dispute needs a `[N]` marker. This includes — but is not limited to:
+
+**Grant details** (cite to the CA, grant proposal, or program document with page number)
+- Grant timeline, start and end dates, milestones
+- Target population: who will be served, eligibility criteria, estimated reach
+- Geography: countries, regions, districts covered
+- Grant activities and what each activity entails
+- Grant conditions, triggers, or disbursement criteria
+- Budget figures and line items
+- Implementing partners and their roles
+
+**Organizational facts**
+- Grantee mission, history, founding year, scale
+- Track record, past performance, program reach
+- Staff size, presence in target countries
+
+**Evidence and data**
+- Statistics and numerical data (mortality rates, coverage figures, costs)
+- Study-derived results or efficacy claims
+- Statements about what an organization has found or reported
 - Direct quotes from any source
+
+**Rule of thumb:** if a sentence describes something the grant will do, who it will reach, when, where, or how much it costs — it needs a citation, even if the information comes directly from the CA.
 
 ### What does NOT need a citation
 
@@ -225,10 +243,18 @@ Per the Types of Non-Cited Statements reference (doc 5). Exemption categories:
 
 ### Footnote formats
 
-Where the CA cites a specific external source, reproduce that citation in the Sources table using GiveWell conventions. Where the CA provides the information directly without citing an external source:
+**Citing the CA itself:** the conditional approval is a citable source. When grant details (timeline, population, geography, activities, budget, conditions) come directly from the CA, cite it by page number:
+- Sources table entry: `GiveWell, "Conditional approval — [Grantee name]," [Year], p. X (unpublished)`
+- If the CA lacks page numbers, cite the section heading instead: `p. — (section: "Grant activities")`
+- The CA should appear as a row in the Sources table and be cited whenever grant-specific details derive from it
 
-- In the Sources table: `From the conditional approval: "[relevant quote]"` or `Unpublished`
-- If an external citation is clearly needed but not provided: add a `[SOURCE NEEDED]` row in the Sources table
+**Citing the grant proposal or program documents:** if the researcher has provided these as source documents, cite them with page numbers in the same way.
+
+**Citing external sources the CA references:** reproduce the citation from the CA's own footnotes in the Sources table using GiveWell conventions.
+
+**When no external source exists:** use `From the conditional approval, p. X: "[relevant quote]"` — do not leave grant details uncited simply because the information came from the CA.
+
+**When a citation is needed but unavailable:** add a `[SOURCE NEEDED]` row in the Sources table.
 
 ---
 
@@ -381,10 +407,22 @@ After completing the full draft, run a dedicated citation audit before the sensi
 3. **If no marker and you believe it's exempt:** identify which exemption category applies (from the list above). If you cannot clearly name an exemption category, the sentence needs a citation.
 
 **Common failure modes to specifically check for:**
-- Sentences that begin with "The [grantee] has..." or "[Grantee] works in..." without a footnote
-- Coverage or reach statistics stated as fact without a source marker
+
+*Grant details — every one of these needs a `[N]` marker:*
+- Timeline or dates ("the grant will run from X to Y", "activities begin in Q1 2026")
+- Target population ("the grant will reach X women aged Y–Z in district W")
+- Geography ("the program operates in these regions/districts/facilities")
+- Grant activities stated as fact ("the grant will fund training for X health workers")
+- Grant conditions or disbursement triggers
+- Budget figures and line items
+- Implementing partner roles
+
+*Organization and evidence:*
+- Sentences beginning "The [grantee] has..." or "[Grantee] works in..." without a footnote
+- Coverage or reach statistics without a source marker
 - Efficacy or impact claims ("the intervention reduces X by Y%") without a marker
-- Budget line items asserted without a CA reference
+
+*Structure:*
 - In a Nutshell claims that have no citation support anywhere in the body
 
 **Using source documents during the audit:**
